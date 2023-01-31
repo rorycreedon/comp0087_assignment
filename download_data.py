@@ -12,11 +12,11 @@ import os
 import shutil
 from pathlib import Path
 from tqdm import tqdm
+import gzip
 
 ####################################################
-# DOWNLOADING DATA
+# FUNCTIONS TO DOWNLOAD DATA
 ####################################################
-
 
 def download_extract_data(url, name):
 	"""
@@ -80,8 +80,34 @@ def jsonl_to_df(name):
 	# Delete .jsonl file
 	os.remove("temp/" + name + ".jsonl")
 
-	df.to_pickle("data/" + name + ".pkl")
+	return df
 
+
+def download_extract_citations(url):
+	"""
+	Download citation graph data from case.law website and extract into a .dataframe.
+
+	Params:
+	`url` (str): URL of zip file
+	"""
+
+	# Download and unzip files from website
+	response = requests.get(url)
+	with gzip.open(BytesIO(response.content), "rt") as f:
+		header = f.readlines()
+
+	# Clean into dataframe
+	df = pd.DataFrame(header)
+	df = df[0].str.split(",", 1, expand=True)  # expand the case and the cases it cites
+	df = df.rename(columns={0: "id", 1: "cited_cases"})
+	df["id"] = df["id"].astype(int)
+
+	return df
+
+
+####################################################
+# RUNNING CODE
+####################################################
 
 if __name__ == "__main__":
 
@@ -90,10 +116,26 @@ if __name__ == "__main__":
 	Path("temp/").mkdir(parents=True, exist_ok=True)
 
 	# Links and relevant states to download
-	urls = ["https://case.law/download/bulk_exports/latest/by_jurisdiction/case_text_open/nm/nm_text.zip", "https://case.law/download/bulk_exports/latest/by_jurisdiction/case_text_open/ark/ark_text.zip"]
+	bulk_urls = [
+		"https://case.law/download/bulk_exports/latest/by_jurisdiction/case_text_open/nm/nm_text.zip",
+		"https://case.law/download/bulk_exports/latest/by_jurisdiction/case_text_open/ark/ark_text.zip",
+	]
+
+	citation_urls = [
+		"https://case.law/download/citation_graph/2021-09-21/by_jurisdiction/N.M./citations.csv.gz",
+		"https://case.law/download/citation_graph/2021-09-21/by_jurisdiction/Ark./citations.csv.gz",
+	]
+
 	states = ["new_mexico", "arkansas"]
 
 	# Downloading and saving data
-	for i in tqdm(range(len(urls))):
-		download_extract_data(urls[i], states[i])
-		jsonl_to_df(states[i])
+	for i in tqdm(range(len(bulk_urls))):
+		
+		# Download relevant dataframes
+		download_extract_data(bulk_urls[i], states[i])
+		df = jsonl_to_df(states[i])
+		citations = download_extract_citations(citation_urls[i])
+
+		# Merge dataframes
+		df = df.merge(citations, left_on='id', right_on='id', how='left')
+		df.to_pickle('data/' + states[i] + ".pkl")
