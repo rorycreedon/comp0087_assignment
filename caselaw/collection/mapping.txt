@@ -1,0 +1,85 @@
+"settings": {
+"number_of_shards": 1,
+"number_of_replicas": 0,
+"analysis": {
+  "analyzer": {
+	  "name_analyser" : {
+		  "type" : "custom",
+		  "tokenizer" : "standard",
+		  "filter" : ["lowercase", "name_stop"]
+	  },
+	  "html_analyser": {
+		  "type": "custom",
+		  "tokenizer": "standard",
+		  "char_filter": ["html_strip"],
+		  "filter": ["lowercase", "html_stop"]
+	  }
+  },
+  "filter": {
+	  "name_stop" : {
+		  "type": "stop",
+		  "stop" : []
+	  },
+	  "html_stop" : {
+		  "type": "stop",
+		  "stopwords_path" : "stopwords/html-stop.txt"
+	  }
+  }
+},
+"similarity": {
+  "name": {
+	  "type": "BM25",
+	  "b": 0.75,
+	  "k1": 1.2
+  },
+  "text": {
+	  "type": "BM25",
+	  "b": 0.75,
+	  "k1": 1.2
+  }
+}
+},
+
+"mappings": {
+  "decision": {
+	  "_source": {
+		  "enabled": true
+	  },
+	  "properties": {
+		  "name": {
+			  "type": "text",
+			  "term_vector" : "with_positions_offsets",
+			  "similarity": "name",
+			  "analyzer": "name_analyser",
+			   "fields": {
+				  "length": {
+					  "type": "token_count",
+					  "store": true,
+					  "analyzer": "whitespace"
+				  }
+			   }
+		  },
+		  "jurisdiction" : {
+		  	  "type": "keyword",
+		  },
+		  "date_filed": {
+			  "type": "date",
+			  "format":"yyyy-MM-dd||epoch_millis"
+		  },
+
+		  "html": {
+			  "type": "text",
+			  "term_vector" : "with_positions_offsets",
+			  "similarity": "text",
+			  "analyzer": "html_analyser",
+			   "fields": {
+				  "length": {
+					  "type": "token_count",
+					  "store": true,
+					  "analyzer": "whitespace"
+				  }
+			   }
+		  }
+	  }
+  }
+}
