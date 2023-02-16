@@ -1,9 +1,9 @@
 // Daniel Locke, 2017
-// 
-// Command line tool for creating documents from JSON files obtained from 
-// www.courtlistener.com/api. Both Opinion and Cluster files are required. 
-// These files are combined into an output json file as per the `Doc` 
-// struct.  
+//
+// Command line tool for creating documents from JSON files obtained from
+// www.courtlistener.com/api. Both Opinion and Cluster files are required.
+// These files are combined into an output json file as per the `Doc`
+// struct.
 
 package main
 
@@ -11,33 +11,33 @@ import (
 	"bytes"
 	"encoding/gob"
 	"encoding/json"
-	"fmt"
+
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
 	"time"
 )
 
 type Opinion struct {
-	Cluster string `json:"cluster"`
-	ResourceUri string `json:"resource_uri"`
-	AbsoluteUrl string `json:"absolute_url"`
-	PlainText string `json:"plain_text"`
-	Html string `json:"html_with_citations"`
-	Cited []string `json:"opinions_cited"`
-
+	Cluster     string   `json:"cluster"`
+	ResourceUri string   `json:"resource_uri"`
+	AbsoluteUrl string   `json:"absolute_url"`
+	PlainText   string   `json:"plain_text"`
+	Html        string   `json:"html_with_citations"`
+	Cited       []string `json:"opinions_cited"`
 }
 
 type Cluster struct {
-	OpinionId int `json:""`
-	DateFiled string `json:"date_filed"`
-	CaseName string `json:"case_name"`
-	CitationCount      int    `json:"citation_count"`
+	OpinionId     int    `json:""`
+	DateFiled     string `json:"date_filed"`
+	CaseName      string `json:"case_name"`
+	CitationCount int    `json:"citation_count"`
 }
 
 type ClusterCitations struct {
@@ -57,23 +57,22 @@ type ClusterCitations struct {
 }
 
 type Doc struct {
-	Id int `json:"id"`
-	Cluster int `json:"cluster"`
-	Title string `json:"title"`
-	Jurisdiction string `json:"jurisdiction"`
-	DateFiled string `json:"date_filed"`
-	CitationCount int `json:"citation_count"`
-	Citations ClusterCitations `json:"citations"`
-	Cited []int `json:"cited"`
-	Html string `json:"html"`
-
+	Id            int              `json:"id"`
+	Cluster       int              `json:"cluster"`
+	Title         string           `json:"title"`
+	Jurisdiction  string           `json:"jurisdiction"`
+	DateFiled     string           `json:"date_filed"`
+	CitationCount int              `json:"citation_count"`
+	Citations     ClusterCitations `json:"citations"`
+	Cited         []int            `json:"cited"`
+	Html          string           `json:"html"`
 }
 
 type List struct {
 	M map[string]int
 }
 
-func (l * List) listWrite(k string) {
+func (l *List) listWrite(k string) {
 	l.M[k] = 0
 }
 
@@ -162,7 +161,7 @@ func generateDocs(source, dest, clusterPath string, list *List) error {
 		sourcePath := source + "/" + obj[i].Name()
 		destPath := dest + "/" + obj[i].Name()
 		if obj[i].Name() != ".DS_Store" {
-				if obj[i].IsDir() {
+			if obj[i].IsDir() {
 				clustPath := clusterPath + "/" + obj[i].Name()
 				err = generateDocs(sourcePath, destPath, clustPath, list)
 				if err != nil {
@@ -198,7 +197,7 @@ func GenerateDoc(source, sourceFile, dest, clusterPath string) error {
 		return err
 	}
 
-	doc.Id, err = strconv.Atoi(strings.Replace(sourceFile, ".json","", -1))
+	doc.Id, err = strconv.Atoi(strings.Replace(sourceFile, ".json", "", -1))
 	if err != nil {
 		log.Panic(err)
 		return err
@@ -206,7 +205,6 @@ func GenerateDoc(source, sourceFile, dest, clusterPath string) error {
 
 	doc.Jurisdiction = getDir(source)
 	doc.Html = op.Html
-
 
 	for _, citation := range op.Cited {
 		cit := strings.Replace(citation, "http://www.courtlistener.com/api/rest/v3/opinions/", "", 1)
@@ -302,7 +300,7 @@ Collection Doc Creation
 			log.Panic(err)
 		}
 	}
-	
+
 	if err != nil {
 		log.Panic(err)
 	}
