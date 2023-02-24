@@ -25,6 +25,18 @@ def open_json(path):
 
     return result_df
 
+#%%
+def process_df(df):
+    """
+    Data-preprocessing of DataFrame
+    """
+    for index, text in enumerate(df["TEXT"]):
+        concat_text = "".join(text)
+        df["Text"][index] = concat_text
+    
+    return df
+
+
 # %%
 df = open_json("ECHR_Dataset/EN_train")
 
