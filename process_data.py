@@ -30,9 +30,11 @@ def process_df(df):
     """
     Data-preprocessing of DataFrame
     """
-    for index, text in enumerate(df["TEXT"]):
-        concat_text = "".join(text)
-        df["Text"][index] = concat_text
+    for index, row in df.iterrows():
+        # join sequences
+        concat_text = "".join(row["TEXT"])
+        # overwrite
+        df.loc[index, "TEXT"] = concat_text
     
     return df
 
@@ -40,4 +42,6 @@ def process_df(df):
 # %%
 df = open_json("ECHR_Dataset/EN_train")
 
+# %%
+new_df = process_df(df)
 # %%
