@@ -36,7 +36,7 @@ def clean_echr(df):
     df['all_articles'] = df['violated_articles'] + df['non_violated_articles'] 
 
     # Keep only columns of interest
-    df = df[['itemid', 'text', 'violated_articles', 'violated', 'non_violated_articles', 'all_articles', 'importance']]
+    df = df[['itemid', 'text', 'violated_articles', 'violated', 'non_violated_articles', 'all_articles', 'importance', 'inadmissible']]
 
     return df
 
