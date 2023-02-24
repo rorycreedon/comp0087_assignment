@@ -56,15 +56,10 @@ def download_echr(name):
     # Download dataset
     data = load_dataset(path = "jonathanli/echr", name = name)
 
-    # Convert test, train and validation to dataframes
-    test_df = pd.DataFrame(data['test'])
-    train_df = pd.DataFrame(data['train'])
-    valid_df = pd.DataFrame(data['validation'])
-
-    # Clean each dataframe
-    test_df = clean_echr(test_df)
-    train_df = clean_echr(train_df)
-    valid_df = clean_echr(valid_df)
+    # Convert test, train and validation to dataframes and clean
+    test_df = clean_echr(pd.DataFrame(data['test']))
+    train_df = clean_echr(pd.DataFrame(data['train']))
+    valid_df = clean_echr(pd.DataFrame(data['validation']))
 
     # Make data and echr folder if necessary
     if not os.path.exists('data'):
@@ -72,10 +67,8 @@ def download_echr(name):
     if not os.path.exists('data/echr'):
         os.mkdir('data/echr')
 
-    # Save each dataframe to pickle file
-    test_df.to_pickle(f'data/echr/{name}_test.pkl')
-    train_df.to_pickle(f'data/echr/{name}_train.pkl')
-    valid_df.to_pickle(f'data/echr/{name}_valid.pkl')
+    # Return dataframes
+    return train_df, valid_df, test_df
 
 ####################################################
 # RUNNING CODE
@@ -84,5 +77,13 @@ def download_echr(name):
 if __name__ == '__main__':
 
     # Download and clean ECHR datasets
-    download_echr('anon')
-    download_echr('non-anon')
+    anon_train_df, anon_valid_df, anon_test_df = download_echr('anon')
+    non_anon_train_df, non_anon_valid_df, non_anon_test_df = download_echr('non-anon')
+
+    # Save dataframes to pickle files
+    anon_train_df.to_pickle('data/echr/anon_train_df.pkl')
+    anon_valid_df.to_pickle('data/echr/anon_valid_df.pkl')
+    anon_test_df.to_pickle('data/echr/anon_test_df.pkl')
+    non-anon_train_df.to_pickle('data/echr/non-anon_train_df.pkl')
+    non-anon_valid_df.to_pickle('data/echr/non-anon_valid_df.pkl')
+    non-anon_test_df.to_pickle('data/echr/non-anon_test_df.pkl')
