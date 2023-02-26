@@ -317,10 +317,39 @@ for epoch in range(epochs):
     
 # %% predict
 
-# get predictions for test data
+batch_size = 32
+
+test_data = torch.utils.data.TensorDataset(test_seq, test_mask)
+test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size)
+
+preds = []
+
+# Set the model to evaluation mode
+model.eval()
+
+# Disable gradient computation to save memory
 with torch.no_grad():
-  preds = model(test_seq.to(device), test_mask.to(device))
-  preds = preds.detach().cpu().numpy()
+
+    # Iterate over the batches and make predictions
+    for batch_seq, batch_mask in test_dataloader:
+        # Move the batch data to the GPU if available
+        batch_seq = batch_seq.to(device)
+        batch_mask = batch_mask.to(device)
+        
+        # Make predictions for the batch
+        batch_preds = model(batch_seq, batch_mask)
+        batch_preds = batch_preds.detach().cpu().numpy()
+        
+        # Store the batch predictions
+        preds.append(batch_preds)
+
+# Concatenate the predictions for all batches
+preds = np.concatenate(preds, axis=0)
+
+# get predictions for test data
+#with torch.no_grad():
+  #preds = model(test_seq.to(device), test_mask.to(device))
+  #preds = preds.detach().cpu().numpy()
 
 # model's performance
 preds = np.argmax(preds, axis = 1)
@@ -331,16 +360,3 @@ print(classification_report(test_y, preds))
 #load weights of best model
 path = 'models/bert-0.pt'
 model.load_state_dict(torch.load(path))
-
-#%% run using the tuned model on cpu
-
-with torch.no_grad():
-  preds = model(test_seq, test_mask)
-  preds = preds.detach().numpy()
-
-#%%
-# model's performance
-preds = np.argmax(preds, axis = 1)
-print(classification_report(test_y, preds))
-
-# %%
