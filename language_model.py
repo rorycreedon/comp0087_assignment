@@ -147,6 +147,8 @@ class BERT_Arch(nn.Module):
 # pass the pre-trained BERT to our define architecture
 model = BERT_Arch(bert)
 
+#%%
+
 # push the model to GPU
 model = model.to(device)
 
@@ -324,10 +326,21 @@ with torch.no_grad():
 preds = np.argmax(preds, axis = 1)
 print(classification_report(test_y, preds))
 
-# %% SAVE MODEL
+# %% load model
 
 #load weights of best model
 path = 'models/bert-0.pt'
 model.load_state_dict(torch.load(path))
+
+#%% run using the tuned model on cpu
+
+with torch.no_grad():
+  preds = model(test_seq, test_mask)
+  preds = preds.detach().numpy()
+
+#%%
+# model's performance
+preds = np.argmax(preds, axis = 1)
+print(classification_report(test_y, preds))
 
 # %%
