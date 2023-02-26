@@ -360,3 +360,5 @@ print(classification_report(test_y, preds))
 #load weights of best model
 path = 'models/bert-0.pt'
 model.load_state_dict(torch.load(path))
+
+# %%
