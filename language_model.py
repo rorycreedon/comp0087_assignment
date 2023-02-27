@@ -1,101 +1,94 @@
-# %% imports
+####################################################
+# IMPORTING PACKAGES
+####################################################
+#%%
 import pandas as pd
 import numpy as np
 import torch
 import torch.nn as nn
-from transformers import AutoModel, BertTokenizerFast, AdamW
+from transformers import AutoModel, AutoTokenizer, AdamW
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.metrics import classification_report
 
-#%% call gpu
+####################################################
+# SETUP
+####################################################
 
-print(torch.backends.mps.is_available())
-print(torch.backends.mps.is_built())
+def activate_gpu(device_type="mac"):
+    if device_type == "mac":
+        if not torch.backends.mps.is_available():
+            print("MPS is not available.")
+            if not torch.backends.mps.is_built():
+                print("MPS is not built.")
+        else:
+            device = torch.device("mps")
+            print(f"Using device: {device}")
+    if device_type == "windows":
+        if not torch.backends.mps.is_available():
+            print("CUDA is not available.")
+            if not torch.backends.mps.is_built():
+                print("CUDA is not built.")
+        else:
+            device = torch.device("cuda")
+            print(f"Using device: {device}")
 
-device = "mps" if torch.backends.mps.is_available() else "cpu"
-print(f"Using device: {device}")
+    return
 
-# %% load dataframes
+####################################################
+# PROCESS DATA
+####################################################
 
-train_df = pd.read_pickle("data/echr/non-anon_train.pkl")
-valid_df = pd.read_pickle("data/echr/non-anon_valid.pkl")
-test_df = pd.read_pickle("data/echr/non-anon_test.pkl")
+def load_echr(task="binary_cls", anon=False):
+    if anon == False:
+        train_df = pd.read_pickle("data/echr/non-anon_train.pkl")
+        val_df = pd.read_pickle("data/echr/non-anon_valid.pkl")
+        test_df = pd.read_pickle("data/echr/non-anon_test.pkl")
+    else:
+        train_df = pd.read_pickle("data/echr/anon_train.pkl")
+        val_df = pd.read_pickle("data/echr/anon_valid.pkl")
+        test_df = pd.read_pickle("data/echr/anon_test.pkl")
 
-# %%
+    if task == "binary_cls":
+        train_text, train_label = train_df["text"].tolist(), train_df["violated"].int().tolist()
+        val_text, val_label = val_df["text"].tolist(), val_df["violated"].int().tolist()
+        test_text, test_label = test_df["text"].tolist(), test_df["violated"].int().tolist()
 
-train_text = train_df["text"]
-train_label = train_df["violated"]
+    return train_text, train_label, val_text, val_label, test_text, test_label
 
-val_text = valid_df["text"]
-val_label = valid_df["violated"]
+def load_models(model_name="bert-based-uncased"):
+    model = AutoModel.from_pretrained(model_name, return_dict=False)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-test_text = test_df["text"]
-test_label = test_df["violated"]
+    return model, tokenizer
+       
+def generate_tokens(tokenizer, text, label, max_length=256):
+    token = tokenizer.batch_encode_plus(
+        text, 
+        max_length = max_length, 
+        pad_to_max_length=True,
+        truncation=True,
+        return_token_type_ids=False
+    )
+    seq = torch.tensor(token['input_ids'])
+    mask = torch.tensor(token['attention_mask'])
+    y = torch.tensor(label).type(torch.LongTensor)
 
-# %% load bert tokenizer
+    return seq, mask, y
 
-bert = AutoModel.from_pretrained('bert-base-uncased', return_dict=False)
-tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
+def create_dateloaders(seq, mask, y, sampler_type="random", batch_size=32):
+    data = TensorDataset(seq, mask, y)
+    if sampler_type == "random":
+        sampler = RandomSampler(data)
+    elif sampler_type == "sequential":
+        sampler = SequentialSampler(data)
+    dataloader = DataLoader(data, sampler=sampler, batch_size=batch_size)
 
-# %% generate tokens
+    return dataloader
 
-max_seq_len = 256
-
-tokens_train = tokenizer.batch_encode_plus(
-    train_text.tolist(),
-    max_length = max_seq_len,
-    pad_to_max_length=True,
-    truncation=True,
-    return_token_type_ids=False
-)
-
-tokens_val = tokenizer.batch_encode_plus(
-    val_text.tolist(),
-    max_length = max_seq_len,
-    pad_to_max_length=True,
-    truncation=True,
-    return_token_type_ids=False
-)
-
-tokens_test = tokenizer.batch_encode_plus(
-    test_text.tolist(),
-    max_length = max_seq_len,
-    pad_to_max_length=True,
-    truncation=True,
-    return_token_type_ids=False
-)
-
-# %% convert to tensors
-
-train_seq = torch.tensor(tokens_train['input_ids'])
-train_mask = torch.tensor(tokens_train['attention_mask'])
-train_y = torch.tensor(train_label.tolist()).int().type(torch.LongTensor)
-
-val_seq = torch.tensor(tokens_val['input_ids'])
-val_mask = torch.tensor(tokens_val['attention_mask'])
-val_y = torch.tensor(val_label.tolist()).int().type(torch.LongTensor)
-
-test_seq = torch.tensor(tokens_test['input_ids'])
-test_mask = torch.tensor(tokens_test['attention_mask'])
-test_y = torch.tensor(test_label.tolist()).int().type(torch.LongTensor)
-
-# %% create dataloaders
-
-batch_size = 32
-
-train_data = TensorDataset(train_seq, train_mask, train_y)
-train_sampler = RandomSampler(train_data)
-train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size)
-
-val_data = TensorDataset(val_seq, val_mask, val_y)
-val_sampler = SequentialSampler(val_data)
-val_dataloader = DataLoader(val_data, sampler = val_sampler, batch_size=batch_size)
-
-# %% freeze bert parameters
-
-for param in bert.parameters():
-    param.requires_grad = False
+####################################################
+# BERT
+####################################################
 
 #%%
 
