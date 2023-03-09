@@ -166,6 +166,8 @@ def test(test_loader, model, model_name):
     print(classification_report(all_labels, all_preds))
     print()
 
+    return
+
 """
 classes
 """
@@ -196,7 +198,7 @@ if __name__ == "__main__":
 
     task = "binary_cls"
     model_name = "bert-1" 
-    max_length = 16 # !!!
+    max_length = 5 # !!!
     print(f"task {task}")
     print(f"model name {model_name}")
     print(f"max sequence length {max_length}")
@@ -204,7 +206,7 @@ if __name__ == "__main__":
     
     # hyperparameters
     print("hyperparameters")
-    num_epochs = 10 
+    num_epochs = 2
     lr = 1e-3
     weight_decay = 1e-3
     batch_size = 32
@@ -212,6 +214,7 @@ if __name__ == "__main__":
     print(f"--> learning rate {lr}")
     print(f"--> weight decay {weight_decay}")
     print(f"--> batch size {batch_size}")
+    print()
 
     # binary classification on non-anon echr data
     train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = load_echr(task="binary_cls", anon=False)
