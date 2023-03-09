@@ -11,6 +11,7 @@ import torch.nn as nn
 import numpy as np
 from sklearn.metrics import classification_report
 import time
+import os
 
 """
 functions
@@ -194,6 +195,12 @@ if __name__ == "__main__":
     print("=========================")
     print("script starts...")
     print()
+
+    # Make folders if necessary
+    if not os.path.exists('models'):
+        os.mkdir('models')
+    if not os.path.exists('models/binary_cls'):
+        os.mkdir('models/binary_cls')
 
     # use gpu
     device = "mps" if torch.backends.mps.is_available() else "cpu"
