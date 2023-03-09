@@ -66,6 +66,7 @@ def create_dataloader(tokens, labels, batch_size, type):
 def train(train_loader, model, task="binary_cls", lr=1e-3, weight_decay=1e-3):
     start = time.time()
     running_loss = 0
+    acc = 0
 
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=weight_decay) 
 
@@ -99,8 +100,16 @@ def train(train_loader, model, task="binary_cls", lr=1e-3, weight_decay=1e-3):
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
         # update parameters
         optimizer.step()
+
+        if task == "binary_cls":
+                probs = nn.Sigmoid()(preds)
+                preds = (probs > 0.5).long()
+                acc += torch.sum(preds == labels)
+
+    acc = acc / (len(train_loader)*len(batch))
     
     print(f"----> training loss {running_loss}")
+    print(f"----> training accuracy {acc})
     print(f"----> time taken {time.time()-start}")
 
     return running_loss
@@ -134,7 +143,15 @@ def validate(val_loader, model, task="binary_cls"):
             # add on to the total loss
             running_loss += loss.item()
 
+            if task == "binary_cls":
+                probs = nn.Sigmoid()(preds)
+                preds = (probs > 0.5).long()
+                acc += torch.sum(preds == labels)
+
+    acc = acc / (len(val_loader)*len(batch))
+
     print(f"----> validation loss {running_loss}")
+    print(f"----> validation accuracy {acc})
     print(f"----> time taken {time.time()-start}")
     print()
 
