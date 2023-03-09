@@ -48,7 +48,7 @@ def generate_tokens(tokenizer, texts, max_length=512):
     return tokens
 
 # create dataloaders
-def create_dataloader(tokens, labels, type, batch_size=32):
+def create_dataloader(tokens, labels, batch_size, type):
     data = TensorDataset(tokens.input_ids, tokens.attention_mask, torch.tensor(labels))
 
     if type == "train":
@@ -139,12 +139,12 @@ def validate(val_loader, model, task="binary_cls"):
 
     return running_loss
 
-def test(test_loader, model, model_name):
+def test(test_loader, model, model_name, task):
     # loaded trained model
-    model.load_state_dict(torch.load(f'models/{str(model_name)}.pt'))
+    model.load_state_dict(torch.load(f'models/{str(task)}/{str(model_name)}.pt'))
 
-    all_preds = []
-    all_labels = []
+    all_preds = torch.tensor([])
+    all_labels = torch.tensor([])
 
     # iterate over batches
     for i, batch in enumerate(test_loader):
@@ -160,8 +160,12 @@ def test(test_loader, model, model_name):
             # forward pass  
             preds = model(input_ids, attention_mask)
             preds, labels = preds.type(torch.FloatTensor), labels.type(torch.FloatTensor)
-            preds = np.argmax(preds, axis = 1)
-            all_preds.append(preds)
+            if task == "binary_cls":
+                probs = nn.Sigmoid()(preds)
+                preds = (probs > 0.5).long()
+            #preds = np.argmax(preds, axis=1)
+            all_preds = torch.cat((all_preds, preds), dim=0)
+            all_labels = torch.cat((all_labels, labels), dim=0)
 
     print(classification_report(all_labels, all_preds))
     print()
@@ -242,7 +246,7 @@ if __name__ == "__main__":
 
     train_losses = []
     val_losses = []
-
+    """
     for epoch in range(num_epochs):
         print('epoch {:} / {:}'.format(epoch + 1, num_epochs))
 
@@ -259,9 +263,9 @@ if __name__ == "__main__":
     torch.save(model.state_dict(), f'models/{str(task)}/{str(model_name)}.pt')
     print('model saved')
     print()
-
+    """
     # test
-    test(test_loader, model, model_name)
+    test(test_loader, model, model_name, task)
 
     print("script finishes")
     print("=========================")
