@@ -22,6 +22,7 @@ functions
 def validate_withscore(val_loader, model, task="binary_cls"):
     start = time.time()
     running_loss = 0
+    acc = 0
 
     if task == "binary_cls":
         loss_func = nn.BCEWithLogitsLoss()

@@ -118,6 +118,7 @@ def train(train_loader, model, task="binary_cls", lr=1e-3, weight_decay=1e-3):
 def validate(val_loader, model, task="binary_cls"):
     start = time.time()
     running_loss = 0
+    acc = 0
 
     if task == "binary_cls":
         loss_func = nn.BCEWithLogitsLoss()
@@ -158,9 +159,10 @@ def validate(val_loader, model, task="binary_cls"):
 
     return running_loss
 
-def test(test_loader, model, model_name, task):
-    # loaded trained model
-    model.load_state_dict(torch.load(f'models/{str(task)}/{str(model_name)}.pt'))
+def test(test_loader, model, task, model_name=""):
+    if model_name != "":
+        # loaded trained model
+        model.load_state_dict(torch.load(f'models/{str(task)}/{str(model_name)}.pt'))
 
     all_preds = torch.tensor([])
     all_labels = torch.tensor([])
@@ -226,7 +228,7 @@ if __name__ == "__main__":
 
     task = "binary_cls"
     model_name = "bert-1" 
-    max_length = 5 # !!!
+    max_length = 512 # !!!
     print(f"task {task}")
     print(f"model name {model_name}")
     print(f"max sequence length {max_length}")
@@ -234,10 +236,10 @@ if __name__ == "__main__":
     
     # hyperparameters
     print("hyperparameters")
-    num_epochs = 2
+    num_epochs = 4
     lr = 1e-3
     weight_decay = 1e-3
-    batch_size = 32
+    batch_size = 8
     print(f"--> number of epochs {num_epochs}")
     print(f"--> learning rate {lr}")
     print(f"--> weight decay {weight_decay}")
@@ -270,7 +272,7 @@ if __name__ == "__main__":
 
     train_losses = []
     val_losses = []
-    
+    """
     for epoch in range(num_epochs):
         print('epoch {:} / {:}'.format(epoch + 1, num_epochs))
 
@@ -282,14 +284,15 @@ if __name__ == "__main__":
         # append training and validation loss
         train_losses.append(train_loss)
         val_losses.append(val_loss)
-
+    
     # save trained model
     torch.save(model.state_dict(), f'models/{str(task)}/{str(model_name)}.pt')
     print('model saved')
     print()
-    
+    """
     # test
-    test(test_loader, model, model_name, task)
+    #test(test_loader, model, model_name, task)
+    test(test_loader, model, task, model_name="")
 
     print("script finishes")
     print("=========================")
