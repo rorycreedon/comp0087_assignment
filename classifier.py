@@ -12,6 +12,7 @@ import numpy as np
 from sklearn.metrics import classification_report
 import time
 import os
+from config import device
 
 """
 functions
@@ -109,7 +110,7 @@ def train(train_loader, model, task="binary_cls", lr=1e-3, weight_decay=1e-3):
     acc = acc / (len(train_loader)*len(batch))
     
     print(f"----> training loss {running_loss}")
-    print(f"----> training accuracy {acc})
+    print(f"----> training accuracy {acc}")
     print(f"----> time taken {time.time()-start}")
 
     return running_loss
@@ -151,7 +152,7 @@ def validate(val_loader, model, task="binary_cls"):
     acc = acc / (len(val_loader)*len(batch))
 
     print(f"----> validation loss {running_loss}")
-    print(f"----> validation accuracy {acc})
+    print(f"----> validation accuracy {acc}")
     print(f"----> time taken {time.time()-start}")
     print()
 
@@ -220,7 +221,6 @@ if __name__ == "__main__":
         os.mkdir('models/binary_cls')
 
     # use gpu
-    device = "mps" if torch.backends.mps.is_available() else "cpu"
     print(f"using {device}")
     print()
 
@@ -270,14 +270,14 @@ if __name__ == "__main__":
 
     train_losses = []
     val_losses = []
-    """
+    
     for epoch in range(num_epochs):
         print('epoch {:} / {:}'.format(epoch + 1, num_epochs))
 
         #train model
-        train_loss = train(train_loader, model, task, lr, weight_decay)
+        train_loss, _ = train(train_loader, model, task, lr, weight_decay)
         #evaluate model
-        val_loss = validate(val_loader, model, task)
+        val_loss, _ = validate(val_loader, model, task)
 
         # append training and validation loss
         train_losses.append(train_loss)
@@ -287,7 +287,7 @@ if __name__ == "__main__":
     torch.save(model.state_dict(), f'models/{str(task)}/{str(model_name)}.pt')
     print('model saved')
     print()
-    """
+    
     # test
     test(test_loader, model, model_name, task)
 
