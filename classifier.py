@@ -19,15 +19,15 @@ functions
 """
 
 # load the original echr data
-def load_echr(task="binary_cls", anon=False):
+def load_data(folder="echr", task="binary_cls", anon=False):
     if anon == False:
-        train_df = pd.read_pickle("data/echr/non-anon_train.pkl")
-        val_df = pd.read_pickle("data/echr/non-anon_valid.pkl")
-        test_df = pd.read_pickle("data/echr/non-anon_test.pkl")
+        train_df = pd.read_pickle(f"data/{folder}/non-anon_train.pkl")
+        val_df = pd.read_pickle(f"data/{folder}/non-anon_valid.pkl")
+        test_df = pd.read_pickle(f"data/{folder}/non-anon_test.pkl")
     else:
-        train_df = pd.read_pickle("data/echr/anon_train.pkl")
-        val_df = pd.read_pickle("data/echr/anon_valid.pkl")
-        test_df = pd.read_pickle("data/echr/anon_test.pkl")
+        train_df = pd.read_pickle(f"data/{folder}/anon_train.pkl")
+        val_df = pd.read_pickle(f"data/{folder}/anon_valid.pkl")
+        test_df = pd.read_pickle(f"data/{folder}/anon_test.pkl")
 
     if task == "binary_cls":
         train_texts, train_labels = train_df["text"].tolist(), train_df["violated"].astype(int).tolist()
@@ -226,9 +226,11 @@ if __name__ == "__main__":
     print(f"using {device}")
     print()
 
+    folder = "long_t5_summary"
     task = "binary_cls"
     model_name = "bert-1" 
     max_length = 512 # !!!
+    print(f"folder {folder}")
     print(f"task {task}")
     print(f"model name {model_name}")
     print(f"max sequence length {max_length}")
@@ -247,7 +249,8 @@ if __name__ == "__main__":
     print()
 
     # binary classification on non-anon echr data
-    train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = load_echr(task="binary_cls", anon=False)
+    train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = load_data(folder, task, anon=False)
+    print(train_texts[0])
 
     # remove warning
     logging.set_verbosity_error()
