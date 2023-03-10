@@ -73,7 +73,7 @@ def validate_withscore(val_loader, model, task="binary_cls"):
 
 
 # Define the objective function to optimize
-def objective(params, pretrained_model_name="bert-base-uncased", num_epochs=4):
+def objective(params, pretrained_model_name="bert-base-uncased", num_epochs=5):
     # binary classification on non-anon echr data
     train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = load_echr(task="binary_cls", anon=False)
 
@@ -139,9 +139,9 @@ if __name__ == "__main__":
     
     # search space
     space = {
-    'lr': hp.loguniform('lr', -5, -3),
+    'lr': hp.choice('lr', 1e-1, 1e-2, 1e-3, 1e-4, 1e-5),
     'batch_size': hp.choice('batch_size', [4, 8, 16, 32]),
-    'weight_decay': hp.loguniform('weight_decay', -6, -3),
+    'weight_decay': hp.loguniform('weight_decay', -3, -1),
     }   
 
     best = fmin(fn=objective, space=space, algo=tpe.suggest, max_evals=10)

@@ -19,7 +19,7 @@ functions
 """
 
 # load the original echr data
-def load_data(folder="echr", task="binary_cls", anon=False):
+def load_echr(task="binary_cls", anon=False):
     if anon == False:
         train_df = pd.read_pickle(f"data/{folder}/non-anon_train.pkl")
         val_df = pd.read_pickle(f"data/{folder}/non-anon_valid.pkl")
@@ -191,7 +191,7 @@ def test(test_loader, model, task, model_name=""):
     print(classification_report(all_labels, all_preds))
     print()
 
-    return
+    return all_preds, all_labels
 
 """
 classes
@@ -226,11 +226,9 @@ if __name__ == "__main__":
     print(f"using {device}")
     print()
 
-    folder = "long_t5_summary"
     task = "binary_cls"
     model_name = "bert-1" 
     max_length = 512 # !!!
-    print(f"folder {folder}")
     print(f"task {task}")
     print(f"model name {model_name}")
     print(f"max sequence length {max_length}")
@@ -249,7 +247,7 @@ if __name__ == "__main__":
     print()
 
     # binary classification on non-anon echr data
-    train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = load_data(folder, task, anon=False)
+    train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = load_echr(task, anon=False)
     print(train_texts[0])
 
     # remove warning
@@ -295,7 +293,7 @@ if __name__ == "__main__":
     """
     # test
     #test(test_loader, model, model_name, task)
-    test(test_loader, model, task, model_name="")
+    test_preds, test_labels, test(test_loader, model, task, model_name="")
 
     print("script finishes")
     print("=========================")
