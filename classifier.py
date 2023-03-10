@@ -19,7 +19,7 @@ functions
 """
 
 # load the original echr data
-def load_echr(task="binary_cls", anon=False):
+def load_data(folder="echr", task="binary_cls", anon=False):
     if anon == False:
         train_df = pd.read_pickle(f"data/{folder}/non-anon_train.pkl")
         val_df = pd.read_pickle(f"data/{folder}/non-anon_valid.pkl")
@@ -29,10 +29,15 @@ def load_echr(task="binary_cls", anon=False):
         val_df = pd.read_pickle(f"data/{folder}/anon_valid.pkl")
         test_df = pd.read_pickle(f"data/{folder}/anon_test.pkl")
 
+    if folder == "echr":
+        text_column = "text"
+    else:
+        text_column = "summary"
+
     if task == "binary_cls":
-        train_texts, train_labels = train_df["text"].tolist(), train_df["violated"].astype(int).tolist()
-        val_texts, val_labels = val_df["text"].tolist(), val_df["violated"].astype(int).tolist()
-        test_texts, test_labels = test_df["text"].tolist(), test_df["violated"].astype(int).tolist()
+        train_texts, train_labels = train_df[text_column].tolist(), train_df["violated"].astype(int).tolist()
+        val_texts, val_labels = val_df[text_column].tolist(), val_df["violated"].astype(int).tolist()
+        test_texts, test_labels = test_df[text_column].tolist(), test_df["violated"].astype(int).tolist()
 
     return train_texts, train_labels, val_texts, val_labels, test_texts, test_labels
 
@@ -226,9 +231,11 @@ if __name__ == "__main__":
     print(f"using {device}")
     print()
 
+    folder = "long_t5_summary"
     task = "binary_cls"
     model_name = "bert-1" 
     max_length = 512 # !!!
+    print(f"folder {folder}")
     print(f"task {task}")
     print(f"model name {model_name}")
     print(f"max sequence length {max_length}")
@@ -247,8 +254,7 @@ if __name__ == "__main__":
     print()
 
     # binary classification on non-anon echr data
-    train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = load_echr(task, anon=False)
-    print(train_texts[0])
+    train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = load_data(folder, task, anon=False)
 
     # remove warning
     logging.set_verbosity_error()
@@ -293,7 +299,7 @@ if __name__ == "__main__":
     """
     # test
     #test(test_loader, model, model_name, task)
-    test_preds, test_labels, test(test_loader, model, task, model_name="")
+    test_preds, test_labels = test(test_loader, model, task, model_name="")
 
     print("script finishes")
     print("=========================")
