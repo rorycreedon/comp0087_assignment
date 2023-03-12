@@ -56,7 +56,7 @@ if __name__ == "__main__":
             os.mkdir(f'data/echr/{algo}')
         for set in ["valid", "train", "test"]:
             for name in ["anon", "non-anon"]:
-                # text or lex rank
+                # choose algorithm
                 summarizer.setup_summarizer(algo)
                 # print what is running
                 print(f'{algo} {set} {name}')
