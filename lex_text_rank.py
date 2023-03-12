@@ -5,6 +5,7 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lex_rank import LexRankSummarizer
 from sumy.summarizers.text_rank import TextRankSummarizer
+from sumy.summarizers.reduction import ReductionSummarizer
 from sumy.nlp.stemmers import Stemmer
 from sumy.utils import get_stop_words
 
@@ -24,6 +25,8 @@ class Summarizer:
             self.summarizer = LexRankSummarizer(stemmer)
         elif summarizer_name == "textrank":
             self.summarizer = TextRankSummarizer(stemmer)
+        elif summarizer_name == "reduction":
+            self.summarizer = ReductionSummarizer(stemmer)
         else:
             raise ValueError("Invalid summarizer name")
         self.summarizer.stop_words = get_stop_words(self.language)
@@ -47,14 +50,11 @@ if __name__ == "__main__":
     # Setup summarizer
     summarizer = Summarizer("english")
 
-    # Make folders if necessary
-    if not os.path.exists('data/echr/lexrank'):
-        os.mkdir('data/echr/lexrank')
-    if not os.path.exists('data/echr/textrank'):
-        os.mkdir('data/echr/textrank')
-
-    for algo in ["lexrank", "textrank"]:
-        for set in ["train", "valid", "test"]:
+    #for algo in ["lexrank", "textrank"]:
+    for algo in ["reduction"]:
+        if not os.path.exists(f'data/echr/{algo}'):
+            os.mkdir(f'data/echr/{algo}')
+        for set in ["valid", "train", "test"]:
             for name in ["anon", "non-anon"]:
                 # text or lex rank
                 summarizer.setup_summarizer(algo)
