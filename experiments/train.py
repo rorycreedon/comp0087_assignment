@@ -13,7 +13,7 @@ import argparse
 from data_loader import load_data, generate_tokens, create_dataloader
 from get_loss import get_loss_func
 import logging
-from model import LegalBertBinaryCls, LegalBertMultiCls, LegalBertRegression
+from model import get_model
 
 """
 functions
@@ -114,7 +114,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--folder", type=str, default="echr")
-    parser.add_argument("--anon", type=bool, default=False)
     parser.add_argument("--tasks", type=tuple, default = ("binary_cls", "regression"), help = "The tasks to be worked on")
     parser.add_argument("--model_name", type=str, default = "legalbert_echr_truncation-1", help = "The path to save the model")
     parser.add_argument("--max_seq_length", type=int, default = 512, help = "The maximum length of the input sequence")
@@ -140,7 +139,6 @@ if __name__ == "__main__":
 
     # save information for this task
     logger.info('folder: %s', args.folder)
-    logger.info('anon: %s', args.anon)
     logger.info('model name: %s', args.model_name)
     logger.info('max sequence length: %d', args.max_seq_length)
     logger.info('number of epochs: %d', args.num_epochs)
@@ -169,8 +167,7 @@ if __name__ == "__main__":
         print("task: ", task)
         print()
 
-        # binary classification on non-anon echr data
-        train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = load_data(args.folder, task, args.anon)
+        train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = load_data(args.folder, task)
 
         # remove warning
         transformers.logging.set_verbosity_error()
@@ -178,7 +175,7 @@ if __name__ == "__main__":
         # load model
         model = AutoModel.from_pretrained(args.pretrained_model, return_dict=False)
         # adapt model
-        model = LegalBertBinaryCls(model)
+        model = get_model(model, task)
         # move model to gpu
         model.to(device)
 

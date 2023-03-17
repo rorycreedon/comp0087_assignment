@@ -58,3 +58,17 @@ class LegalBertRegression(nn.Module):
         outputs = self.linear(outputs)
 
         return outputs
+    
+"""
+functions
+"""
+
+def get_model(task, model):
+    if task == "binary_cls":
+        model = LegalBertBinaryCls(model)
+    elif task == "multi_cls":
+        model = LegalBertMultiCls(model)
+    elif task == "regression":
+        model = LegalBertRegression(model)
+
+    return model
