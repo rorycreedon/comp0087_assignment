@@ -12,7 +12,7 @@ import numpy as np
 from sklearn.metrics import classification_report
 import time
 import os
-from config import device
+from experiments.config import device
 
 """
 functions
@@ -77,7 +77,7 @@ def train(train_loader, model, task="binary_cls", lr=1e-3, weight_decay=1e-3):
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=weight_decay) 
 
     if task == "binary_cls":
-        loss_func = nn.BCEWithLogitsLoss()
+        loss_func = nn.BCELoss()
 
     model.train()
 
@@ -108,8 +108,7 @@ def train(train_loader, model, task="binary_cls", lr=1e-3, weight_decay=1e-3):
         optimizer.step()
 
         if task == "binary_cls":
-                probs = nn.Sigmoid()(preds)
-                preds = (probs > 0.5).long()
+                preds = (preds > 0.5).long()
                 acc += torch.sum(preds == labels)
 
     acc = acc / (len(train_loader)*len(batch))
@@ -151,8 +150,7 @@ def validate(val_loader, model, task="binary_cls"):
             running_loss += loss.item()
 
             if task == "binary_cls":
-                probs = nn.Sigmoid()(preds)
-                preds = (probs > 0.5).long()
+                preds = (preds > 0.5).long()
                 acc += torch.sum(preds == labels)
 
     acc = acc / (len(val_loader)*len(batch))
@@ -187,8 +185,7 @@ def test(test_loader, model, task, model_name=""):
             preds = model(input_ids, attention_mask)
             preds, labels = preds.type(torch.FloatTensor), labels.type(torch.FloatTensor)
             if task == "binary_cls":
-                probs = nn.Sigmoid()(preds)
-                preds = (probs > 0.5).long()
+                preds = (preds > 0.5).long()
             #preds = np.argmax(preds, axis=1)
             all_preds = torch.cat((all_preds, preds), dim=0)
             all_labels = torch.cat((all_labels, labels), dim=0)
@@ -206,11 +203,15 @@ class BERT(nn.Module):
     def __init__(self, bert):
         super(BERT, self).__init__()
         self.bert = bert 
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, input_ids, attention_mask):
-        preds = self.bert(input_ids, attention_mask, return_dict=False)
+        outputs = self.bert(input_ids, attention_mask, return_dict=False)
+        # pool
+        pooled_ouputs = outputs[0][:,1]
+        preds = self.sigmoid(pooled_ouputs)
 
-        return preds[0][:,1]
+        return preds
     
 """
 tasks
@@ -231,7 +232,7 @@ if __name__ == "__main__":
     print(f"using {device}")
     print()
 
-    folder = "long_t5_summary"
+    folder = "echr"
     task = "binary_cls"
     model_name = "bert-1" 
     max_length = 512 # !!!
@@ -279,7 +280,7 @@ if __name__ == "__main__":
 
     train_losses = []
     val_losses = []
-    """
+    
     for epoch in range(num_epochs):
         print('epoch {:} / {:}'.format(epoch + 1, num_epochs))
 
@@ -296,7 +297,7 @@ if __name__ == "__main__":
     torch.save(model.state_dict(), f'models/{str(task)}/{str(model_name)}.pt')
     print('model saved')
     print()
-    """
+    
     # test
     #test(test_loader, model, model_name, task)
     test_preds, test_labels = test(test_loader, model, task, model_name="")
