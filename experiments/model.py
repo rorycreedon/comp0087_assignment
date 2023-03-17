@@ -54,7 +54,7 @@ class LegalBertRegression(nn.Module):
         self.linear = nn.Linear(self.bert.hidden_size, 1)
 
     def forward(self, input_ids, attention_mask):
-        outputs = self.bert(input_ids, attention_mask, return_dict=False)
+        losses, logits = self.bert(input_ids, attention_mask, return_dict=False)
         outputs = self.linear(outputs)
 
         return outputs
