@@ -57,6 +57,8 @@ def train(train_loader, model, task, lr):
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
         # update parameters
         optimizer.step()
+
+    running_loss = running_loss / len(train_loader)
     
     print(f"----> training loss {running_loss}")
     print(f"----> time taken {time.time()-start}")
@@ -90,6 +92,8 @@ def validate(val_loader, model, task):
             loss = loss_func(preds, labels)
             # add on to the total loss
             running_loss += loss.item()
+    
+    running_loss = running_loss / len(val_loader)
 
     print(f"----> validation loss {running_loss}")
     print(f"----> time taken {time.time()-start}")
@@ -194,9 +198,9 @@ if __name__ == "__main__":
             print('epoch {:} / {:}'.format(epoch + 1, args.num_epochs))
 
             #train model
-            train_loss, _ = train(train_loader, model, task, args.lr)
+            train_loss = train(train_loader, model, task, args.lr)
             #evaluate model
-            val_loss, _ = validate(val_loader, model, task)
+            val_loss = validate(val_loader, model, task)
 
             # append training and validation loss
             train_losses.append(train_loss)
