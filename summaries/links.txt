@@ -1,10 +1,11 @@
+Summaries can be accessed via the links below
+
 Extractive Summaries:
 
 - LexRank: https://drive.google.com/drive/folders/1GLZkdlw1B7WYXBEFZf4uZHbWu68d_nJ4?usp=sharing
 - TextRank: https://drive.google.com/drive/folders/14wCaRAp9wGe97srtzeVxAfnTvL3ynOkF?usp=sharing
 - Graph Reduction: https://drive.google.com/drive/folders/1S6B_2vVLI5_tBGe5N1SyuJ-_nktRVwaw?usp=sharing
 - Bert Chunking: https://drive.google.com/drive/folders/1f0jKJt7BmBJz2O4uCXYOnkx2zjAPg3DD?usp=share_link
-- SNN_DM
 - LG-LSTM:
 
 Abstractive Summaries:

@@ -50,11 +50,12 @@ def train(train_loader, model, task, lr):
 
         # compute the loss between actual and predicted values
         loss = loss_func(preds, labels)
+
         # add on to the total loss
         running_loss += loss.item()
         # backward pass to calculate the gradients
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
+        #torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
         # update parameters
         optimizer.step()
 
@@ -114,21 +115,26 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--folder", type=str, default="echr")
-    parser.add_argument("--tasks", type=tuple, default = ("binary_cls", "regression"), help = "The tasks to be worked on")
-    parser.add_argument("--model_name", type=str, default = "legalbert_echr_truncation-1", help = "The path to save the model")
+    parser.add_argument("--tasks", type=list, default = ["multi_cls"], help = "The tasks to be worked on")
+    parser.add_argument("--model_name", type=str, default = "echr_2", help = "The path to save the model")
     parser.add_argument("--max_seq_length", type=int, default = 512, help = "The maximum length of the input sequence")
-    parser.add_argument("--num_epochs", type=int, default = 6, help = "Number of epochs")
+    parser.add_argument("--num_epochs", type=int, default = 1, help = "Number of epochs")
     parser.add_argument("--lr", type=float, default = 3e-5, help = "Learning rate")
     parser.add_argument("--batch_size",type = int, default = 4, help = "Batch size")
     parser.add_argument("--pretrained_model", type=str, default = "nlpaueb/legal-bert-small-uncased", help = "The path to the pretrained model")
 
     args = parser.parse_args()
 
+    log_dir = "experiments/logs/train"
+    os.makedirs(log_dir, exist_ok=True)
+    # check if the file exists in the logs folder
+    model_path = os.path.join(log_dir, args.model_name + ".log")
+    if os.path.isfile(model_path):
+        raise ValueError("model_name has been used")
+
     # create a logger object
     logger = logging.getLogger(args.model_name)
     logger.setLevel(logging.INFO)
-    log_dir = "experiments/logs/train"
-    os.makedirs(log_dir, exist_ok=True)
     fh = logging.FileHandler(os.path.join(log_dir, args.model_name + ".log"))
     fh.setLevel(logging.INFO)
     # create a formatter and add it to the file handler
@@ -163,6 +169,9 @@ if __name__ == "__main__":
     print(f"folder: {args.folder}")
     print()
 
+    print(f"We will be evaluating the following tasks: {args.tasks}")
+    print()
+
     for task in args.tasks:
         print("task: ", task)
         print()
@@ -175,7 +184,7 @@ if __name__ == "__main__":
         # load model
         model = AutoModel.from_pretrained(args.pretrained_model, return_dict=False)
         # adapt model
-        model = get_model(model, task)
+        model = get_model(task, model)
         # move model to gpu
         model.to(device)
 
@@ -209,8 +218,8 @@ if __name__ == "__main__":
         print()
 
         # save information for this task
-        logger.info('[%s] Training loss: %s', task, str(train_losses))
-        logger.info('[%s] Validation losses: %s', task, str(val_losses))
+        logger.info('[%s] training loss: %s', task, str(train_losses))
+        logger.info('[%s] validation losses: %s', task, str(val_losses))
 
     print("script finishes")
     print("=========================")
