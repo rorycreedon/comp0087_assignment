@@ -118,9 +118,9 @@ if __name__ == "__main__":
     parser.add_argument("--tasks", type=list, default = ["binary_cls", "multi_cls", "regression"], help = "The tasks to be worked on")
     parser.add_argument("--model_name", type=str, default = "echr_2", help = "The path to save the model")
     parser.add_argument("--max_seq_length", type=int, default = 512, help = "The maximum length of the input sequence")
-    parser.add_argument("--num_epochs", type=int, default = 1, help = "Number of epochs")
-    parser.add_argument("--lr", type=float, default = 3e-5, help = "Learning rate")
-    parser.add_argument("--batch_size",type = int, default = 4, help = "Batch size")
+    parser.add_argument("--num_epochs", type=int, default = 5, help = "Number of epochs")
+    parser.add_argument("--lr", type=float, default = 2e-5, help = "Learning rate")
+    parser.add_argument("--batch_size",type = int, default = 8, help = "Batch size")
     parser.add_argument("--pretrained_model", type=str, default = "nlpaueb/legal-bert-small-uncased", help = "The path to the pretrained model")
 
     args = parser.parse_args()
