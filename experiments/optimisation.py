@@ -19,27 +19,8 @@ from model import get_model
 import os
 from functools import partial
 import hyperopt
+import pickle
 
-"""
-classes
-"""
-
-class EarlyStoppingCallback(hyperopt.callbacks.Ctrl):
-    def __init__(self, trial, patience):
-        self.trial = trial
-        self.patience = patience
-        self.best_score = float('inf')
-        self.counter = 0
-
-    def __call__(self, result):
-        val_score = -result['loss']  # Hyperopt minimizes the objective function, so we need to negate the score
-        if val_score < self.best_score:
-            self.best_score = val_score
-            self.counter = 0
-        else:
-            self.counter += 1
-            if self.counter >= self.patience:
-                self.trial.stop()
 """
 functions
 """
@@ -119,8 +100,6 @@ def objective(params, folder, task, pretrained_model, max_length, num_epochs):
     val_losses = []
 
     for epoch in range(num_epochs):
-        print('epoch {:} / {:}'.format(epoch + 1, num_epochs))
-
         #train model
         train_loss = train(train_loader, model, task, params["lr"])
         #evaluate model
@@ -152,43 +131,13 @@ if __name__ == "__main__":
     parser.add_argument("--tasks", type=list, default = ["binary_cls"], help = "The tasks to be worked on")
     parser.add_argument("--file_name", type=str, default = "echr", help = "The path to the log file")
     parser.add_argument("--max_seq_length", type=int, default = 512, help = "The maximum length of the input sequence")
-    parser.add_argument("--num_epochs", type=int, default = 6, help = "Maximum number of epochs")
+    parser.add_argument("--num_epochs", type=int, default = 4, help = "Maximum number of epochs")
     parser.add_argument("--lr", type=list, default = [2e-5, 3e-5, 4e-5, 5e-5], help = "Learning rate range")
     parser.add_argument("--batch_size",type=list, default = [4, 8, 16], help = "Batch size range")
     parser.add_argument("--pretrained_model", type=str, default = "nlpaueb/legal-bert-small-uncased", help = "The path to the pretrained model")
-    parser.add_argument("--num_trials", type=int, default = 10, help = "Number of trials")
-    parser.add_argument("--patience", type=int, default = 1, help = "Patience for early stopping")
+    parser.add_argument("--num_trials", type=int, default = 1, help = "Number of trials")
 
     args = parser.parse_args()
-
-    log_dir = "experiments/logs/opt"
-    os.makedirs(log_dir, exist_ok=True)
-    # check if the file exists in the logs folder
-    file_path = os.path.join(log_dir, args.file_name + ".log")
-    if os.path.isfile(file_path):
-        raise ValueError("file_name has been used")
-
-    # create a logger object
-    logger = logging.getLogger(args.file_name)
-    logger.setLevel(logging.INFO)
-    fh = logging.FileHandler(os.path.join(log_dir, args.model_name + ".log"))
-    fh.setLevel(logging.INFO)
-    # create a formatter and add it to the file handler
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
-    # add the file handler to the logger
-    logger.addHandler(fh)
-
-    # save information for this task
-    logger.info('folder: %s', args.folder)
-    logger.info('file name: %s', args.file_name)
-    logger.info('max sequence length: %d', args.max_seq_length)
-    logger.info('maximum number of epochs: %d', args.num_epochs)
-    logger.info('learning rate range: %f', args.lr)
-    logger.info('batch size range: %d', args.batch_size)
-    logger.info('pretrained model: %s', args.pretrained_model)
-    logger.info('number of trials: %d', args.num_trials)
-    logger.info('patience: %d', args.patience)
 
     # use gpu
     print(f"using {device}")
@@ -226,11 +175,28 @@ if __name__ == "__main__":
                     algo=tpe.suggest, 
                     max_evals=args.num_trials,
                     trials = trials,
-                    callbacks=[EarlyStoppingCallback(trials, args.patience)]
                     )
 
         # print the best hyperparameters
         print(f"best hyperparameters {best}")
+
+        log_dir = "experiments/logs/opt/" + str(task)
+        os.makedirs(log_dir, exist_ok=True)
+
+        info = {
+            'folder': args.folder,
+            'max_seq_length': args.max_seq_length,
+            'pretrained_model': args.pretrained_model,
+            'learning_rate_range': args.lr,
+            'batch_size_range': args.batch_size,
+            'num_epochs': args.num_epochs,
+            'num_trials': args.num_trials,
+            'trials': trials
+        }
+
+        # save file
+        with open(log_dir + args.file_name + '.pkl', 'wb') as f:
+            pickle.dump(info, f)
 
     print("script finishes")
     print("=========================")

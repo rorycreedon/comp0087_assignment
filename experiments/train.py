@@ -218,7 +218,7 @@ if __name__ == "__main__":
         print()
 
         # save information for this task
-        logger.info('[%s] training loss: %s', task, str(train_losses))
+        logger.info('[%s] training losses: %s', task, str(train_losses))
         logger.info('[%s] validation losses: %s', task, str(val_losses))
 
     print("script finishes")

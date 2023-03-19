@@ -24,8 +24,6 @@ class LegalBertBinaryCls(nn.Module):
         outputs = self.dropout(logits)
         outputs = self.linear(logits)
         preds = self.sigmoid(outputs)
-        # squeeze
-        #preds = preds.squeeze(1)
 
         return preds
     
