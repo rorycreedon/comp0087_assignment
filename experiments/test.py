@@ -149,10 +149,10 @@ if __name__ == "__main__":
 
         if task == "binary_cls" or task == "multi_cls":
             report = classification_report(test_labels, test_preds)
-            logger.info('[%s] classification report:\n%s', task, report)
+            logger.info('[%s] classification report: \n%s', task, report)
         elif task == "regression":
             mae = mean_absolute_error(test_labels, test_preds)
-            logger.info('[%s] mean absolute error:%f', task, mae)
+            logger.info('[%s] mean absolute error: %f', task, mae)
 
     print("script finishes")
     print("=========================")
