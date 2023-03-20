@@ -108,7 +108,12 @@ class GridSearchOpt():
         # Calculate total running loss
         running_loss /= len(val_loader)
         # Calculate metrics
-        metric_val = f1_score(y_true=all_labels, y_pred=all_preds, average="weighted") if task == "binary_cls" or task == "multi_cls" else mean_absolute_error(all_labels, all_preds)
+        if task == "binary_cls":
+            metric_val = f1_score(y_true=all_labels, y_pred=all_preds, average="weighted", labels=np.arange(2))
+        elif task == "multi_cls":
+            metric_val = f1_score(y_true=all_labels, y_pred=all_preds, average="weighted", labels=np.arange(23))
+        elif task == "regression":
+            metric_val = mean_absolute_error(all_labels, all_preds)
         # Calculate running loss
         print(f"----> Validation loss {running_loss}")
         print(f"----> Time taken {time.time()-start}")
@@ -166,17 +171,18 @@ class GridSearchOpt():
                         # Append training, validation losses and metric values for each epoch
                         train_losses.append(train_loss)
                         val_losses.append(val_loss)
-                        metric_val.append(metric_val)
+                        metric_values.append(metric_val)
                         # Check for early stopping
                         if epoch >= 1:
                             if val_losses[epoch] > val_losses[epoch-1]:
                                 break
                     # Save information for this task
-                    print('[%s] Metric values: %s', task, str(metric_values))
-                    print('[%s] Training losses: %s', task, str(train_losses))
-                    print('[%s] Validation losses: %s', task, str(val_losses))
-                # Add to log
-                self.log_results(task, train_losses, val_losses, metric_values)
+                    print(f'[{task}] Metric values: {str(metric_values)}')
+                    print(f'[{task}] training losses: {str(train_losses)}')
+                    print(f'[{task}] validation losses: {str(val_losses)}')
+                    print()
+                    # Add to log
+                    self.log_results(task, lr, batch_size, train_losses, val_losses, metric_values)
                 # Check optimal metrics
                 if np.mean(metric_values) < best_metric_val:
                     print("Metric value has improved - saving new model!")
