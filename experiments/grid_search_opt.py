@@ -145,8 +145,6 @@ class GridSearchOpt():
             # Initialise Grid Search
             lr_list = [4e-5, 3e-5, 2e-5, 1e-5]
             batch_size_list = [16, 8, 4]
-            # Return best metrics against F1
-            metric_values = []
             best_metric_val = np.inf
             best_lr, best_batch_size = None, None
             for _, lr in enumerate(lr_list):
@@ -158,6 +156,8 @@ class GridSearchOpt():
                     # Load data
                     train_loader = create_dataloader(train_tokens, train_labels, batch_size, type="train")
                     val_loader = create_dataloader(val_tokens, val_labels, batch_size, type="val")
+                    # Return best metrics against F1
+                    metric_values = []
                     # Store losses
                     train_losses = []
                     val_losses = []
@@ -183,13 +183,13 @@ class GridSearchOpt():
                     print()
                     # Add to log
                     self.log_results(task, lr, batch_size, train_losses, val_losses, metric_values)
-                # Check optimal metrics
-                if np.mean(metric_values) < best_metric_val:
-                    print("Metric value has improved - saving new model!")
-                    best_lr = lr
-                    best_batch_size = batch_size
-                    torch.save(model.state_dict(), f'models/{str(task)}/{str(self.args.model_name)}.pt')
-                    best_metric_val = np.mean(metric_values)
+                    # Check optimal metrics
+                    if np.mean(metric_values) < best_metric_val:
+                        print("Metric value has improved - saving new model!")
+                        best_lr = lr
+                        best_batch_size = batch_size
+                        torch.save(model.state_dict(), f'models/{str(task)}/{str(self.args.model_name)}.pt')
+                        best_metric_val = np.mean(metric_values)
                 print(f"Grid Search finished for current LR. Next LR begins...")
             # Add best results to dictionary
             task_opt_hp[task] = {"Task": task, "Epoch": self.args.num_epochs, "Learning Rate": best_lr, "Batch Size": best_batch_size}
