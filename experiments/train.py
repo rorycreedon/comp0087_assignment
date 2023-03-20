@@ -32,7 +32,6 @@ def train(train_loader, model, task, lr):
 
     # iterate over batches
     for i, batch in enumerate(train_loader):
-        
         # progress update after every 100 batches.
         if i % 100 == 0:
             print("--> batch {:} of {:}.".format(i, len(train_loader)))
