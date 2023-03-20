@@ -22,6 +22,7 @@ functions
 # train the model
 def train(train_loader, model, task, lr):
     start = time.time()
+    running_loss = 0
 
     optimizer = AdamW(model.parameters(), lr=lr) 
 
@@ -31,9 +32,7 @@ def train(train_loader, model, task, lr):
 
     # iterate over batches
     for i, batch in enumerate(train_loader):
-        # initialise
-        running_loss = 0
-
+        
         # progress update after every 100 batches.
         if i % 100 == 0:
             print("--> batch {:} of {:}.".format(i, len(train_loader)))

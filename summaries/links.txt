@@ -6,7 +6,7 @@ Extractive Summaries:
 - TextRank: https://drive.google.com/drive/folders/14wCaRAp9wGe97srtzeVxAfnTvL3ynOkF?usp=sharing
 - Graph Reduction: https://drive.google.com/drive/folders/1S6B_2vVLI5_tBGe5N1SyuJ-_nktRVwaw?usp=sharing
 - Bert Chunking: https://drive.google.com/drive/folders/1f0jKJt7BmBJz2O4uCXYOnkx2zjAPg3DD?usp=share_link
-- LG-LSTM:
+- GL-LSTM: https://drive.google.com/drive/folders/1ky2epDuYF9gG_lMiDQSGfwCOlPkTzcXS?usp=sharing
 
 Abstractive Summaries:
 
