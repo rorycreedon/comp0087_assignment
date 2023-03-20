@@ -21,8 +21,16 @@ from model import get_model
 
 class GridSearchOpt():
 
-    def __init__(self, args):
+    def __init__(self, args, logger):
         self.args = args
+        self.logger  = logger
+
+    def log_results(self, task, lr, batch_size, train_losses, val_losses, metric_values):
+        # Log the results and hyperparameters for this hyperparameter combination
+        self.logger.info("[%s] Hyperparameters: LR=%f, Batch Size=%d", task, lr, batch_size)
+        self.logger.info("[%s] Training losses: %s", task, str(train_losses))
+        self.logger.info("[%s] Validation losses: %s", task, str(val_losses))
+        self.logger.info("[%s] Metric values: %s", task, str(metric_values))
 
     def train(self, model, train_loader, lr, task):
         # Start timer
@@ -167,6 +175,8 @@ class GridSearchOpt():
                     print('[%s] Metric values: %s', task, str(metric_values))
                     print('[%s] Training losses: %s', task, str(train_losses))
                     print('[%s] Validation losses: %s', task, str(val_losses))
+                # Add to log
+                self.log_results(task, train_losses, val_losses, metric_values)
                 # Check optimal metrics
                 if np.mean(metric_values) < best_metric_val:
                     print("Metric value has improved - saving new model!")
@@ -191,16 +201,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--folder", type=str, default="echr")
     parser.add_argument("--anon", type=bool, default=False)
-    parser.add_argument("--tasks", type=tuple, default = ["binary_cls", "regression"], help = "The tasks to be worked on")
-    parser.add_argument("--model_name", type=str, default = "legalbert_echr_truncation-1", help = "The path to save the model")
-    parser.add_argument("--num_epochs", type=int, default = 3, help = "Number of epochs")
-    parser.add_argument("--max_seq_length", type=int, default = 4, help = "The maximum length of the input sequence")
+    parser.add_argument("--tasks", type=tuple, default = ["binary_cls", "multi_cls", "regression"], help = "The tasks to be worked on")
+    parser.add_argument("--model_name", type=str, default = "echr_truncation_opt", help = "The path to save the model")
+    parser.add_argument("--num_epochs", type=int, default = 5, help = "Number of epochs")
+    parser.add_argument("--max_seq_length", type=int, default = 512, help = "The maximum length of the input sequence")
     parser.add_argument("--pretrained_model", type=str, default = "nlpaueb/legal-bert-small-uncased", help = "The path to the pretrained model")
     args = parser.parse_args()
     # Save information for this task
     logger = logging.getLogger(args.model_name)
     logger.setLevel(logging.INFO)
-    log_dir = "experiments/logs/train"
+    log_dir = "experiments/logs/opt"
     os.makedirs(log_dir, exist_ok=True)
     fh = logging.FileHandler(os.path.join(log_dir, args.model_name + ".log"))
     fh.setLevel(logging.INFO)
@@ -226,7 +236,7 @@ if __name__ == "__main__":
     print("=========================")
     print("Execute Grid Search...")
     # Create Grid Search Model
-    gs_opt_model = GridSearchOpt(args=args)
+    gs_opt_model = GridSearchOpt(args=args, logger=logger)
     # Run Grid Search
     optimal_hyp_tasks = gs_opt_model.run_opt()
     print(optimal_hyp_tasks)
