@@ -17,7 +17,6 @@ from torch.optim import AdamW
 from data_loader import load_data, generate_tokens, create_dataloader
 from model import LegalBertBinaryCls, LegalBertMultiCls, LegalBertRegression
 # Private Library
-from get_loss import get_loss_func
 from model import get_model
 
 class GridSearchOpt():
