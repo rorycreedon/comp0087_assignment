@@ -190,8 +190,6 @@ class GridSearchOpt():
                         best_batch_size = batch_size
                         torch.save(model.state_dict(), f'models/{str(task)}/{str(self.args.model_name)}.pt')
                         best_metric_val = np.mean(metric_values)
-                    # Reinitialise the metric values
-                    metric_values = []
                 print(f"Grid Search finished for current LR. Next LR begins...")
             # Add best results to dictionary
             task_opt_hp[task] = {"Task": task, "Epoch": self.args.num_epochs, "Learning Rate": best_lr, "Batch Size": best_batch_size}
