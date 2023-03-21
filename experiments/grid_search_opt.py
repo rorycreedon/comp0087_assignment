@@ -126,7 +126,7 @@ class GridSearchOpt():
     
     def get_metric_sign(self, task):
         # Returns the correct bound for the metric update
-        return -np.inf if task == "binary_cls" or task == "multi_cls" else np.inf
+        return -1e16 if task == "binary_cls" or task == "multi_cls" else 1e16
     
     def get_eval_bound(self, task, model_val, best_val):
         # Evaluate the correct direction of the bound
