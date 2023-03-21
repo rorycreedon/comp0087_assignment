@@ -113,7 +113,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--folder", type=str, default="echr")
-    parser.add_argument("--task", type=list, default = ["binary_cls", "multi_cls", "regression"], help = "The tasks to be worked on")
+    parser.add_argument("--tasks", type=list, default = ["binary_cls", "multi_cls", "regression"], help = "The tasks to be worked on")
     parser.add_argument("--model_name", type=str, default = "echr_2", help = "The path to save the model")
     parser.add_argument("--max_seq_length", type=int, default = 512, help = "The maximum length of the input sequence")
     parser.add_argument("--num_epochs", type=int, default = 5, help = "Number of epochs")
