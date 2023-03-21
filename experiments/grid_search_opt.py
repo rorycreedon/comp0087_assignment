@@ -123,6 +123,14 @@ class GridSearchOpt():
     def get_loss_func(self, task):
         # Return loss function based on machine learning task
         return nn.BCELoss() if task == "binary_cls" or task == "multi_cls" else nn.L1Loss()
+    
+    def get_metric_sign(self, task):
+        # Returns the correct bound for the metric update
+        return -1e16 if task == "binary_cls" or task == "multi_cls" else 1e16
+    
+    def get_eval_bound(self, task, model_val, best_val):
+        # Evaluate the correct direction of the bound
+        return eval(f"{model_val} > {best_val}") if task == "binary_cls" or task == "multi_cls" else eval(f"{model_val} < {best_val}")
 
     def run_opt(self):
         # Store best hyperparameters
@@ -145,8 +153,7 @@ class GridSearchOpt():
             # Initialise Grid Search
             lr_list = [4e-5, 3e-5, 2e-5, 1e-5]
             batch_size_list = [16, 8, 4]
-            best_metric_val = np.inf
-            best_lr, best_batch_size = None, None
+            best_lr, best_batch_size, best_metric_val = None, None, self.get_metric_sign(task=task)
             for _, lr in enumerate(lr_list):
                 print(f"Grid Search begins - LR: {lr}")
                 for _, batch_size in enumerate(batch_size_list):
@@ -181,15 +188,16 @@ class GridSearchOpt():
                     print(f'[{task}] training losses: {str(train_losses)}')
                     print(f'[{task}] validation losses: {str(val_losses)}')
                     print()
+                    final_model_val = np.mean(metric_values)
                     # Add to log
                     self.log_results(task, lr, batch_size, train_losses, val_losses, metric_values)
-                    # Check optimal metrics
-                    if np.mean(metric_values) < best_metric_val:
+                    # Check optimal metrics depending on task
+                    if self.get_eval_bound(task=task, model_val=final_model_val, best_val=best_metric_val):
                         print("Metric value has improved - saving new model!")
                         best_lr = lr
                         best_batch_size = batch_size
                         torch.save(model.state_dict(), f'models/{str(task)}/{str(self.args.model_name)}.pt')
-                        best_metric_val = np.mean(metric_values)
+                        best_metric_val = final_model_val
                 print(f"Grid Search finished for current LR. Next LR begins...")
             # Add best results to dictionary
             task_opt_hp[task] = {"Task": task, "Epoch": self.args.num_epochs, "Learning Rate": best_lr, "Batch Size": best_batch_size}
@@ -245,6 +253,6 @@ if __name__ == "__main__":
     gs_opt_model = GridSearchOpt(args=args, logger=logger)
     # Run Grid Search
     optimal_hyp_tasks = gs_opt_model.run_opt()
-    print(optimal_hyp_tasks)
+    logger.info(f'Best Hyperparameters: {optimal_hyp_tasks}')
     print("Script finished!")
     print("=========================")
