@@ -201,6 +201,7 @@ class GridSearchOpt():
                 print(f"Grid Search finished for current LR. Next LR begins...")
             # Add best results to dictionary
             task_opt_hp[task] = {"Task": task, "Epoch": self.args.num_epochs, "Learning Rate": best_lr, "Batch Size": best_batch_size}
+            self.logger.info(f"Best Hyperparameters: {task_opt_hp[task]}")
         return task_opt_hp
 
 
