@@ -1,15 +1,15 @@
-"""
-Import packages
-"""
+####################################################
+# IMPORTING PACKAGES
+####################################################
 
 from datasets import load_dataset
 import pandas as pd
 import numpy as np
 import os
 
-"""
-Functions
-"""
+####################################################
+# ECHR DATASET
+####################################################
 
 def clean_echr(df):
     """
@@ -39,7 +39,6 @@ def clean_echr(df):
     df = df[['itemid', 'text', 'violated_articles', 'violated', 'non_violated_articles', 'all_articles', 'importance', 'inadmissible', 'date', 'docname']]
 
     return df
-
 
 def download_echr(name):
     """
@@ -77,9 +76,9 @@ def download_echr(name):
     train_df.to_pickle(f'data/echr/{name}_train.pkl')
     valid_df.to_pickle(f'data/echr/{name}_valid.pkl')
 
-"""
-Run code
-"""
+####################################################
+# RUNNING CODE
+####################################################
 
 if __name__ == '__main__':
 
