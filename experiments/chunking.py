@@ -2,6 +2,10 @@ def chunk_text(text, max_length=512):
     """
     Split a large piece of text into chunks that are no longer than max_length words,
     but do not cut off sentences.
+    
+    Params:
+    `text` (str): the text to be chunked
+    `max_length` (int): the maximum number of words in each chunk
     """
     # Split the text into sentences
     sentences = text.split('. ')
