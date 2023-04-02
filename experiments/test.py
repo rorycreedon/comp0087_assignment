@@ -1,6 +1,6 @@
 
 """
-import packages
+Import packages
 """
 
 from config import device
@@ -18,10 +18,19 @@ from get_loss import get_loss_func
 import time
 
 """
-functions
+Functions
 """
 
 def test(test_loader, model, task, model_name):
+    """
+    Test the inference model on the test set.
+
+    Params:
+    `test_loader` (torch.utils.data.DataLoader): dataloader for the test set
+    `model` (torch.nn.Module): the model to be tested
+    `task` (str): the task to be performed
+    `model_name` (str): the name of the model
+    """
     start = time.time()
     # load trained model
     model.load_state_dict(torch.load(f'models/{str(task)}/{str(model_name)}.pt'))
@@ -31,7 +40,6 @@ def test(test_loader, model, task, model_name):
     running_loss = 0
 
     loss_func = get_loss_func(task)
-
     model.eval()
 
     # iterate over batches
@@ -39,24 +47,19 @@ def test(test_loader, model, task, model_name):
         # progress update after every 100 batches.
         if i % 100 == 0:
             print("--> batch {:} of {:}.".format(i, len(test_loader)))
-
         # push the batch to gpu
         batch = [r.to(device) for r in batch]
         input_ids, attention_mask, labels = batch
-
         with torch.no_grad():
             # forward pass  
             preds = model(input_ids, attention_mask)
             preds, labels = preds.type(torch.FloatTensor), labels.type(torch.FloatTensor)
-
             # compute the loss between actual and predicted values
             loss = loss_func(preds, labels)
             # add on to the total loss
             running_loss += loss.item()
-
             if task == "binary_cls" or task == "multi_cls":
                 preds = torch.round(preds)
-    
             all_preds = torch.cat((all_preds, preds), dim=0)
             all_labels = torch.cat((all_labels, labels), dim=0)
 
@@ -70,18 +73,15 @@ def test(test_loader, model, task, model_name):
 if __name__ == "__main__":
     print("=========================")
     print("script starts...")
-    print()
 
     # parse the arguments
     parser = argparse.ArgumentParser()
-
     parser.add_argument("--folder", type=str, default="echr")
     parser.add_argument("--tasks", type=str, nargs="+", default = ["binary_cls", "multi_cls", "regression"], help = "The tasks to be worked on")
     parser.add_argument("--model_name", type=str, default = "echr_1", help = "The path to the saved model")
     parser.add_argument("--max_seq_length", type=int, default = 512, help = "The maximum length of the input sequence")
     parser.add_argument("--batch_size",type = int, default = 4, help = "Batch size")
     parser.add_argument("--pretrained_model", type=str, default = "nlpaueb/legal-bert-small-uncased", help = "The path to the pretrained model")
-
     args = parser.parse_args()
 
     log_dir = "experiments/logs/test"
@@ -112,17 +112,11 @@ if __name__ == "__main__":
 
     # use gpu
     print(f"using {device}")
-    print()
-
     print(f"folder: {args.folder}")
-    print()
-
     print(f"We will be evaluating the following tasks: {args.tasks}")
-    print()
 
     for task in args.tasks:
         print("task: ", task)
-        print()
 
         train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = load_data(args.folder, task)
 
@@ -133,14 +127,12 @@ if __name__ == "__main__":
         model = AutoModel.from_pretrained(args.pretrained_model, return_dict=False)
         # adapt model
         model = get_model(task, model)
-
         # move model to gpu
         model.to(device)
 
         tokenizer = AutoTokenizer.from_pretrained(args.pretrained_model)
 
         test_tokens = generate_tokens(tokenizer, test_texts, args.max_seq_length)
-
         test_loader = create_dataloader(test_tokens, test_labels, args.batch_size, type="test")
 
         test_preds, test_labels, test_loss = test(test_loader, model, task, args.model_name)

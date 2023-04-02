@@ -1,5 +1,5 @@
 """
-import packages
+Import packages
 """
 
 import torch
@@ -16,18 +16,24 @@ import logging
 from model import get_model
 
 """
-functions
+Functions
 """
 
-# train the model
 def train(train_loader, model, task, lr):
+    """
+    Train the inference model on the training set/
+
+    Params:
+    `train_loader` (torch.utils.data.DataLoader): dataloader for the training set
+    `model` (torch.nn.Module): the model to be trained
+    `task` (str): the task to be performed
+    `lr` (float): learning rate
+    """
     start = time.time()
     running_loss = 0
 
     optimizer = AdamW(model.parameters(), lr=lr) 
-
     loss_func = get_loss_func(task)
-
     model.train()
 
     # iterate over batches
@@ -35,20 +41,15 @@ def train(train_loader, model, task, lr):
         # progress update after every 100 batches.
         if i % 100 == 0:
             print("--> batch {:} of {:}.".format(i, len(train_loader)))
-
         # push the batch to gpu
         batch = [r.to(device) for r in batch]
         input_ids, attention_mask, labels = batch
-
         optimizer.zero_grad()
-
         # forward pass  
         preds = model(input_ids, attention_mask)
         preds, labels = preds.type(torch.FloatTensor), labels.type(torch.FloatTensor)
-
         # compute the loss between actual and predicted values
         loss = loss_func(preds, labels)
-
         # add on to the total loss
         running_loss += loss.item()
         # backward pass to calculate the gradients
@@ -58,7 +59,6 @@ def train(train_loader, model, task, lr):
         optimizer.step()
 
     running_loss = running_loss / len(train_loader)
-    
     print(f"----> training loss {running_loss}")
     print(f"----> time taken {time.time()-start}")
 
@@ -69,7 +69,6 @@ def validate(val_loader, model, task):
     running_loss = 0
 
     loss_func = get_loss_func(task)
-
     model.eval()
 
     # iterate over batches
@@ -77,26 +76,21 @@ def validate(val_loader, model, task):
         # progress update after every 100 batches.
         if i % 100 == 0:
             print("--> batch {:} of {:}.".format(i, len(val_loader)))
-
         # push the batch to gpu
         batch = [r.to(device) for r in batch]
         input_ids, attention_mask, labels = batch
-
         with torch.no_grad():
             # forward pass  
             preds = model(input_ids, attention_mask)
             preds, labels = preds.type(torch.FloatTensor), labels.type(torch.FloatTensor)
-
             # compute the loss between actual and predicted values
             loss = loss_func(preds, labels)
             # add on to the total loss
             running_loss += loss.item()
     
     running_loss = running_loss / len(val_loader)
-
     print(f"----> validation loss {running_loss}")
     print(f"----> time taken {time.time()-start}")
-    print()
 
     return running_loss
 
@@ -107,11 +101,9 @@ tasks
 if __name__ == "__main__":
     print("=========================")
     print("script starts...")
-    print()
 
     # parse the arguments
     parser = argparse.ArgumentParser()
-
     parser.add_argument("--folder", type=str, default="echr")
     parser.add_argument("--tasks", type=str, nargs="+", default = ["binary_cls", "multi_cls", "regression"], help = "The tasks to be worked on")
     parser.add_argument("--model_name", type=str, default = "echr_2", help = "The path to save the model")
@@ -120,7 +112,6 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default = 2e-5, help = "Learning rate")
     parser.add_argument("--batch_size",type = int, default = 8, help = "Batch size")
     parser.add_argument("--pretrained_model", type=str, default = "nlpaueb/legal-bert-small-uncased", help = "The path to the pretrained model")
-
     args = parser.parse_args()
 
     log_dir = "experiments/logs/train"
@@ -162,17 +153,11 @@ if __name__ == "__main__":
 
     # use gpu
     print(f"using {device}")
-    print()
-
     print(f"folder: {args.folder}")
-    print()
-
     print(f"We will be evaluating the following tasks: {args.tasks}")
-    print()
 
     for task in args.tasks:
         print("task: ", task)
-        print()
 
         train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = load_data(args.folder, task)
 
@@ -218,7 +203,6 @@ if __name__ == "__main__":
         # save trained model
         torch.save(model.state_dict(), f'models/{str(task)}/{str(args.model_name)}.pt')
         print('model saved')
-        print()
 
         # save information for this task
         logger.info('[%s] training losses: %s', task, str(train_losses))

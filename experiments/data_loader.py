@@ -1,32 +1,38 @@
 """
-import packages
+Import packages
 """
 
 import pandas as pd
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 import torch
-from chunking import chunk_text
 
 """
-dictionaries
+Dictionaries
 """
 
+# label encoding
 article_dict = {'2': 0, '3': 1, '4': 2, '5': 3, '6': 4, '7': 5, '8': 6, '9': 7, '10': 8, '11': 9, '12': 10, '13': 11, '14': 12, '18': 13, '25': 14, '34': 15, '38': 16, '46': 17, 'P1': 18, 'P4': 19, 'P6': 20, 'P7': 21, 'P12': 22}
 
 """
-functions
+Functions
 """
 
 def get_one_hot_labels(df, article_dict):
     """
-    creates a list of lists with a one-hot encoding of the articles violated for each row in the input dataframe
+    Create a list of lists with a one-hot encoding of the articles violated for each row in the input dataframe
+
+    Params:
+    `df` (pd.DataFrame): dataframe containing the violated articles
+    `article_dict` (dict): dictionary mapping article names to indices
     """
     article_dict = {
         '2': 0, '3': 1, '4': 2, '5': 3, '6': 4, '7': 5, '8': 6, '9': 7, '10': 8, '11': 9, 
         '12': 10, '13': 11, '14': 12, '18': 13, '25': 14, '34': 15, '38': 16, '46': 17, 'P1': 18, 'P4': 19, 
         'P6': 20, 'P7': 21, 'P12': 22
     }
+
     labels = []
+
     for articles in df["violated_articles"]:
         label = [int(key in articles) for key in article_dict.keys()]
         labels.append(label)
@@ -34,6 +40,14 @@ def get_one_hot_labels(df, article_dict):
     return labels
 
 def load_data(folder="echr", task="binary_cls", anon=False):
+    """
+    Load data from pickle files and return train, validation and test sets.
+
+    Params:
+    `folder` (str): folder containing the data
+    `task` (str): task to perform, either 'binary_cls', 'multi_cls' or 'regression'
+    `anon` (bool): whether to load the anonymised data or not
+    """
     if anon == False:
         train_df = pd.read_pickle(f"data/{folder}/non-anon_train.pkl")
         val_df = pd.read_pickle(f"data/{folder}/non-anon_valid.pkl")
@@ -68,14 +82,11 @@ def load_data(folder="echr", task="binary_cls", anon=False):
 def chunking(folder="echr", anon=False):
     
     """
-    Generates chunked data for the ECHR dataset.
-
-    Args:
-        folder (str, optional): Name of the data folder. Defaults to "echr".
-        anon (bool, optional): Include anon data or not. Defaults to False.
-
-    Returns:
-        new_df (pandas dataframe): New dataframe with chunked texts.
+    Generate chunked data for the ECHR dataset.
+    
+    Params:
+    `folder` (str): folder containing the data
+    `anon` (bool): whether to load the anonymised data or not
     """
     
     # load data
@@ -118,8 +129,15 @@ def chunking(folder="echr", anon=False):
     
     return new_df
         
-# tokenize texts
 def generate_tokens(tokenizer, texts, max_length=512):
+    """
+    Tokenize the input texts.
+
+    Params:
+    `tokenizer` (transformers.PreTrainedTokenizer): tokenizer to use
+    `texts` (list): list of texts to tokenize
+    `max_length` (int): maximum length of the tokenized texts
+    """
     tokens = tokenizer.batch_encode_plus(texts, 
         return_tensors = "pt", 
         padding = "max_length",
@@ -131,12 +149,21 @@ def generate_tokens(tokenizer, texts, max_length=512):
 
     return tokens
 
-# create dataloaders
 def create_dataloader(tokens, labels, batch_size, type):
+    """
+    Create a dataloader for the input data.
+
+    Params:
+    `tokens` (torch.Tensor): tensor containing the tokenized texts
+    `labels` (torch.Tensor): tensor containing the labels
+    `batch_size` (int): batch size
+    `type` (str): type of dataloader to create, either 'train', 'val' or 'test'
+    """
     if not isinstance(labels[0], list):
         labels = torch.tensor(labels).unsqueeze(1)
     else:
         labels = torch.tensor(labels)
+
     data = TensorDataset(tokens.input_ids, tokens.attention_mask, labels)
 
     if type == "train":

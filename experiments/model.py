@@ -1,16 +1,16 @@
 """
-import packages
+Import packages
 """
 
 import torch.nn as nn
 
 """
-classes
+Classes
 """
 
 class LegalBertBinaryCls(nn.Module):
     """
-    bert-small-uncased on binary classification
+    bert-small-uncased on binary classification.
     """
     def __init__(self, legalbert):
         super(LegalBertBinaryCls, self).__init__()
@@ -29,7 +29,7 @@ class LegalBertBinaryCls(nn.Module):
     
 class LegalBertMultiCls(nn.Module):
     """
-    bert-small-uncased on multi-class classification
+    bert-small-uncased on multi-class classification.
     """
     def __init__(self, legalbert, num_classes=23):
         super(LegalBertMultiCls, self).__init__()
@@ -48,7 +48,7 @@ class LegalBertMultiCls(nn.Module):
     
 class LegalBertRegression(nn.Module):
     """
-    bert-small-uncased on regression
+    bert-small-uncased on regression.
     """
     def __init__(self, legalbert):
         super(LegalBertRegression, self).__init__()
@@ -64,10 +64,17 @@ class LegalBertRegression(nn.Module):
         return outputs
     
 """
-functions
+Functions
 """
 
 def get_model(task, model):
+    """
+    Select the model based on the task.
+
+    Params:
+    `task` (str): the task to be performed
+    `model` (torch.nn.Module): the base model
+    """
     if task == "binary_cls":
         model = LegalBertBinaryCls(model)
     elif task == "multi_cls":
