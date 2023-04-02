@@ -1,3 +1,4 @@
+# import required libraries
 from __future__ import absolute_import
 from __future__ import division, print_function, unicode_literals
 
@@ -13,6 +14,7 @@ import pandas as pd
 from tqdm import tqdm
 import os
 
+
 class Summarizer:
     def __init__(self, language):
         super(Summarizer, self).__init__()
@@ -20,6 +22,15 @@ class Summarizer:
         self.stemmer = Stemmer(language)
 
     def setup_summarizer(self, summarizer_name):
+        """
+        Initialize summarizer.
+
+        Args:
+            summarizer_name (str): summarizer name. Must be one of "lexrank", "textrank", "reduction".
+
+        Raises:
+            ValueError: invalid summarizer name.
+        """
         stemmer = Stemmer(self.language)
         if summarizer_name == "lexrank":
             self.summarizer = LexRankSummarizer(stemmer)
@@ -32,6 +43,16 @@ class Summarizer:
         self.summarizer.stop_words = get_stop_words(self.language)
 
     def summarize(self, text, num_sentences):
+        """
+        Summarize a peice of text.
+
+        Args:
+            text (str): text to be summarized.
+            num_sentences (int): number of sentences in the summarised text.
+
+        Returns:
+            summary (str): summary of the text.
+        """
         parser = PlaintextParser.from_string(text, Tokenizer(self.language))
         summary = ' '.join([str(sentence) for sentence in self.summarizer(parser.document, num_sentences)])
         
@@ -42,16 +63,25 @@ class Summarizer:
         return summary
     
     def sum_column(self, column, num_sentences):
+        """
+        Summarize a pandas column.
+
+        Args:
+            column (pandas df): pandas column containing text to be summarized.
+            num_sentences (int): number of sentences in the summarised text.
+
+        Returns:
+            column: pandas column containing the summarised text.
+        """
         tqdm.pandas()
         column = column.progress_apply(lambda x: self.summarize(text = x, num_sentences = num_sentences))
         return column
     
 if __name__ == "__main__":
-    # Setup summarizer
+    # setup summarizer
     summarizer = Summarizer("english")
 
-    #for algo in ["lexrank", "textrank"]:
-    for algo in ["reduction"]:
+    for algo in ["lexrank", "textrank", "reduction"]:
         if not os.path.exists(f'data/echr/{algo}'):
             os.mkdir(f'data/echr/{algo}')
         for set in ["valid", "train", "test"]:
