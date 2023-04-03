@@ -1,4 +1,4 @@
-# comp0087_assignment
+# Reconceptualising Automatic Text Summarisation Evaluation: Evidence from Long Legal Texts
 Statistical NLP Research Project
 
 ## Project Description
