@@ -5,7 +5,7 @@ Statistical NLP Research Project
 (Abstract)
 
 ## Project Structure
-- `experiments/`: Contains the scripts to make predictions.
+- `experiments/`: Contains the scripts to make predictions. Main files include `train.py`, `hyperopt.py` and `test.py`
 - `summaries/`: Contains the scripts to generate summaries
 - `plots/`: Contains plots used in the report.
 - `download_hf_data.py`: Downloads the ECHR dataset.
