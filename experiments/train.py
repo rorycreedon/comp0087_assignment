@@ -21,7 +21,7 @@ Functions
 
 def train(train_loader, model, task, lr):
     """
-    Train the inference model on the training set/
+    Train the inference model on the training set.
 
     Params:
     `train_loader` (torch.utils.data.DataLoader): dataloader for the training set
