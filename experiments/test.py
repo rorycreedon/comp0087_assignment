@@ -66,7 +66,6 @@ def test(test_loader, model, task, model_name):
     running_loss = running_loss / len(test_loader)
     print(f"----> test loss {running_loss}")
     print(f"----> time taken {time.time()-start}")
-    print()
 
     return all_preds, all_labels, running_loss
 
