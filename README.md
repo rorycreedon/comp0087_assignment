@@ -1,5 +1,5 @@
 # Reconceptualising Automatic Text Summarisation Evaluation: Evidence from Long Legal Texts
-Statistical NLP Research Project
+Statistical NLP Research Project [report](Report.pdf)
 
 ## Project Description
 Legal documents, such as contracts, case law and legislation, are often very long by nature. Reading, understanding and conducting analysis of these long documents can be a time-consuming and challenging task. This makes legal documents an area ripe for the use of automatic text summarisation (ATS). Within the Natural Language Processing (NLP) literature, the use of ATS has largely been evaluated using metrics such as ROUGE, which compare summarised text to a reference summary produced by a human. However, there are two key problems with using reference-based summary metrics such as ROUGE - firstly, they are limited by the quality of the human summary and secondly, they do not capture how useful the summarised text is for a range of different human tasks. To combat this, we propose an alternative framework for evaluating the effectiveness of summarised text for inference. Our results indicate that the widely used neural network systems, specifically transformers, fail to outperform older graph-based summary techniques on inference tasks despit higher ROUGE scores.
